@@ -1,7 +1,7 @@
 (******************************************************************************)
 (*                                                                            *)
 (*                      INVERSION DE MD* VIA SAT SOLVEUR                      *)
-(*             ghg                                                               *)
+(*                                                                            *)
 (*                      Projet Logique 2016 - Partie SAT                      *)
 (*   Auteur, license, etc.                                                    *)
 (******************************************************************************)
@@ -53,18 +53,18 @@ let rec simple  f = match f with
 	    | Xor (f1,f2) -> simple (Or (And ((Not f1),(Not f2)), And (f1,f2)))
 	    | Imply (f1,f2) -> simple (And (f1,(Not f2)))
 	    | Equiv (f1,f2) -> simple (Or (Not (Equiv (f1,f2)),Not (Equiv (f1,f2))) ) )
-  | And (f1,f2) -> (match (f1,f2) with 
-      | (Const true,f2) -> simple (f2)
-      | (Const false,f2) -> Const false
-      | (f1, Const true) -> simple (f1)
-      | (f1, Const false) -> Const false
-      | (f1,f2) -> And (simple f1, simple f2) )
-  | Or (f1,f2) -> (match (f1,f2) with 
-      | (Const true, f2) -> Const true 
-      | (Const false, f2) -> simple (f2)
-      | (f1, Const true) -> Const true
-      | (f1, Const false) -> simple (f1)
-      | (f1,f2) -> Or (simple f1,simple f2))
+   |And(p,q) -> match (simple(p),simple(q)) with
+   |Const(true),sq -> sq
+   |Const(false),_ -> Const(false)
+   |sp,Const(true) -> sp
+   |_,Const(false) -> Const(false)
+   |sp,sq          -> And(sp,sq)
+ |Or(p,q) -> match (simple(p),simple(q)) with
+   |Const(true),_   -> Const(true)
+   |Const(false),sq -> sq 
+   |_,Const(true)   -> Const(true)
+   |sp,Const(false) -> sp
+   |sp,sq           -> Or(sp,sq)
   | Xor (f1,f2) -> simple (Or (And (f1,(Not f2)),And ((Not f1),f2) )) 
   | Imply (f1, f2) -> simple(Or ((Not f1),f2)) 
   | Equiv (f1,f2) -> simple (Or ((And (f1, f2)),(And ((Not f1),(Not f2))) ))  
@@ -102,6 +102,9 @@ let rec ftc f = match f with
 			| (
 
 ;;
+
+let formulaToCnf f = match f with
+  |
 
 let formulaeToCnf fl = [[]]	(* [TODO] *)
 	      
