@@ -100,6 +100,7 @@ let rec ftc f = match f with
 			| (And(g1,g2),d) ->  ftc (And(Or(g1,d),Or(g2,d)))
 			| (g,And(d1,d2)) ->  ftc (And(Or(g,d1),Or(g,d2)))
 			| (g,d) -> Or(g,d) )
+  | _ -> failwith "normalement on ne rentre pas dans ce cas là"
 ;;
 
 let fusionInside l1 l2 = match l1,l2 with
