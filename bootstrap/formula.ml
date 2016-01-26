@@ -80,16 +80,13 @@ let rec appartient l tau s = match tau with
 
 
 let rec subst_aux f tau = match f with
-  | Lit l -> ( let s = ref false and n = ref false and var = ref 0 in
+  | Lit l -> ( let s = ref false in
 		(match l with 
-		 | Pos d -> ( var := d ; n := true)
-		 | Neg d -> ( var := d ; n := false));
-             if appartient !var tau s 
-             then (if !n then Const !s else Not (Const !s))
-             else Lit l )
+		 | Pos d -> if appartient d tau s then Const !s else Lit l
+		 | Neg d -> if appartient d tau s then Not (Const !s) else Lit l
   | And (f1,f2) -> And (subst_aux f1 tau, subst_aux f2 tau)
   | Or (f1,f2) -> Or (subst_aux f1 tau, subst_aux f2 tau)
-  | _ -> failwith "on ne tombe pas dans ce cas" 
+  | _ -> f 
 ;;
 
 let subst f tau = simple (subst_aux (simple f) tau);;
@@ -98,8 +95,9 @@ let rec ftc f = match f with
   | Lit l -> f 
   | And (f1,f2) -> And(ftc f1,ftc f2) (* la composition de deux CNF est une CNF *) 
   | Or (f1,f2) -> ( match ((ftc f1,ftc f2) with 
-			| (And(g1,g2),d) ->  And(And(ftc Or(g1,d1),ftc Or(g1,d2)),And(ftc Or(g2,d1),ftc Or(g2,d2)))
-			| (
+			| (And(g1,g2),d) ->  ftc And(Or(g1,d),Or(g2,d))
+			| (g,And(d1,d2)) ->  ftc And(Or(g,d1),Or(g,d2))
+			| (g,d) -> Or(g,d)
 
 ;;
 
