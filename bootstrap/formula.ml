@@ -110,8 +110,9 @@ let fusionInside l1 l2 = match l1,l2 with
 let rec formulaToCnf f = match f with
   |And(p,q) -> (formulaToCnf p)@(formulaToCnf q)
   |Or(p,q)  -> fusionInside (formulaToCnf p) (formulaToCnf q)
-  |Lit(n)   -> [[Lit(n)]] ;;
-
+  |Lit(n)   -> [[Lit(n)]]
+  |Const(_) -> [[f]] 
+  |_        -> failwith "formulaToCnf" ;;
 
 
 
