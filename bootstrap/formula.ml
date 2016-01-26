@@ -1,7 +1,7 @@
 (******************************************************************************)
 (*                                                                            *)
 (*                      INVERSION DE MD* VIA SAT SOLVEUR                      *)
-(*             ghg                                                               *)
+(*                                                                            *)
 (*                      Projet Logique 2016 - Partie SAT                      *)
 (*   Auteur, license, etc.                                                    *)
 (******************************************************************************)
@@ -80,16 +80,13 @@ let rec appartient l tau s = match tau with
 
 
 let rec subst_aux f tau = match f with
-  | Lit l -> ( let s = ref false and n = ref false and var = ref 0 in
+  | Lit l -> ( let s = ref false in
 		(match l with 
-		 | Pos d -> ( var := d ; n := true)
-		 | Neg d -> ( var := d ; n := false));
-             if appartient !var tau s 
-             then (if !n then Const !s else Not (Const !s))
-             else Lit l )
+		 | Pos d -> if appartient d tau s then Const !s else Lit l
+		 | Neg d -> if appartient d tau s then Not (Const !s) else Lit l
   | And (f1,f2) -> And (subst_aux f1 tau, subst_aux f2 tau)
   | Or (f1,f2) -> Or (subst_aux f1 tau, subst_aux f2 tau)
-  | _ -> failwith "on ne tombe pas dans ce cas" 
+  | _ -> f 
 ;;
 
 let subst f tau = simple (subst_aux (simple f) tau);;
