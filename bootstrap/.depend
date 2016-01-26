@@ -5,8 +5,8 @@ md.cmi : data.cmi
 param.cmi :
 data.cmo : param.cmi data.cmi
 data.cmx : param.cmx data.cmi
-formula.cmo : param.cmi formula.cmi
-formula.cmx : param.cmx formula.cmi
+formula.cmo : formula.cmi
+formula.cmx : formula.cmi
 generate.cmo : param.cmi formula.cmi data.cmi generate.cmi
 generate.cmx : param.cmx formula.cmx data.cmx generate.cmi
 main.cmo : param.cmi md.cmi generate.cmi formula.cmi data.cmi
