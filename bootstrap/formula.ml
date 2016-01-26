@@ -108,7 +108,11 @@ let formulaToCnf f = match f with
 
 
 
-let rec concatene 
+let rec concat_et_applique f liste = match liste with 
+	| [] -> [] 
+	| a::suite -> (f a)@(concat_et_applique f suite)
+;;
+
 
 let formulaeToCnf fl = [[]]	(* [TODO] *)
 	      
