@@ -53,18 +53,18 @@ let rec simple  f = match f with
 	    | Xor (f1,f2) -> simple (Or (And ((Not f1),(Not f2)), And (f1,f2)))
 	    | Imply (f1,f2) -> simple (And (f1,(Not f2)))
 	    | Equiv (f1,f2) -> simple (Or (Not (Equiv (f1,f2)),Not (Equiv (f1,f2))) ) )
-  |And(p,q) -> match (simple(p),simple(q)) with
+  |And(p,q) -> (match (simple(p),simple(q)) with
 	   |Const(true),sq -> sq
 	   |Const(false),_ -> Const(false)
 	   |sp,Const(true) -> sp
 	   |_,Const(false) -> Const(false)
-	   |sp,sq          -> And(sp,sq)
-  |Or(p,q) -> match (simple(p),simple(q)) with
+	   |sp,sq          -> And(sp,sq))
+  |Or(p,q) -> (match (simple(p),simple(q)) with
 	   |Const(true),_   -> Const(true)
 	   |Const(false),sq -> sq 
 	   |_,Const(true)   -> Const(true)
 	   |sp,Const(false) -> sp
-	   |sp,sq           -> Or(sp,sq)
+	   |sp,sq           -> Or(sp,sq))
   | Xor (f1,f2) -> simple (Or (And (f1,(Not f2)),And ((Not f1),f2) )) 
   | Imply (f1, f2) -> simple(Or ((Not f1),f2)) 
   | Equiv (f1,f2) -> simple (Or ((And (f1, f2)),(And ((Not f1),(Not f2))) ))  
@@ -97,8 +97,8 @@ let rec ftc f = match f with
   | Lit l -> f 
   | And (f1,f2) -> And(ftc f1,ftc f2) (* la composition de deux CNF est une CNF *) 
   | Or (f1,f2) -> ( match (ftc f1,ftc f2) with 
-			| (And(g1,g2),d) ->  ftc And(Or(g1,d),Or(g2,d))
-			| (g,And(d1,d2)) ->  ftc And(Or(g,d1),Or(g,d2))
+			| (And(g1,g2),d) ->  ftc (And(Or(g1,d),Or(g2,d)))
+			| (g,And(d1,d2)) ->  ftc (And(Or(g,d1),Or(g,d2)))
 			| (g,d) -> Or(g,d) )
 ;;
 
