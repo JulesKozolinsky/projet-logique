@@ -102,8 +102,14 @@ let rec ftc f = match f with
 			| (g,d) -> Or(g,d) )
 ;;
 
-let formulaToCnf f = match f with
-  |
+let fusionInside l1 l2 = match l1,l2 with
+  |[l1],[l2] -> [l1@l2]
+  |_,_ -> failwith "on est foutus" ;;
+
+let rec formulaToCnf f = match f with
+  |And(p,q) -> (formulaToCnf p)@(formulaToCnf q)
+  |Or(p,q)  -> fusionInside (formulaToCnf p) (formulaToCnf q)
+  |Lit(n)   -> [[Lit(n)]] ;;
 
 
 
