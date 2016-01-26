@@ -95,8 +95,9 @@ let rec ftc f = match f with
   | Lit l -> f 
   | And (f1,f2) -> And(ftc f1,ftc f2) (* la composition de deux CNF est une CNF *) 
   | Or (f1,f2) -> ( match ((ftc f1,ftc f2) with 
-			| (And(g1,g2),d) ->  And(And(ftc Or(g1,d1),ftc Or(g1,d2)),And(ftc Or(g2,d1),ftc Or(g2,d2)))
-			| (
+			| (And(g1,g2),d) ->  ftc And(Or(g1,d),Or(g2,d))
+			| (g,And(d1,d2)) ->  ftc And(Or(g,d1),Or(g,d2))
+			| (g,d) -> Or(g,d)
 
 ;;
 
