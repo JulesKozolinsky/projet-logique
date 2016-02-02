@@ -143,29 +143,24 @@ let dummyCNF =
 let sat_solver = ref "./minisat"
 
 (** Return the result of minisat called on [cnf] **)
-let testCNF cnf = 
-  let cnf_display = displayCnf cnf in
-  let fn_cnf = "temp.out" in
+let testCNF cnf =
+  let cnf_display = displayCnf cnf
+  and fn_cnf = "temp_cnf.out"
+  and fn_res = "temp_res.out" in
   let oc = open_out fn_cnf in
-  Printf.fprintf oc  "%s\n" cnf_display;
+  Printf.fprintf oc "%s\n" cnf_display;
   close_out oc;
   let resc = (Unix.open_process_in
 		(!sat_solver ^ " \"" ^ (String.escaped fn_cnf)
-		 ^ "\"") : in_channel) in
-  let resSAT = let acc = ref [] in
-	       try while true do
-		     acc := (input_line resc) :: !acc
-		   done; ""
-	       with End_of_file ->
-		 close_in resc;
-		 if List.length !acc = 0
-		 then begin
-		     log ~level:High "It seems that there is no executable called 'minisat' at top level.";
-		     exit 0;
-		   end
-		 else String.concat "\n" (List.rev !acc) in
-  close_in resc;
-  List.hd (List.rev (Str.split (Str.regexp " +") resSAT))
+		 ^ "\" \"" ^ (String.escaped fn_res)^"\"") : in_channel) in
+  Unix.close_process_in resc;
+  let resSAT = let ic = open_in fn_res in
+	       try (let line1 = input_line ic in
+		    let line2 = try input_line ic with _ -> "" in
+		    close_in ic;
+		    line1^line2)
+	       with e -> close_in_noerr ic; raise e in
+  resSAT
 	   
 let test () =
   ()			     (* [TODO] *)
