@@ -168,8 +168,13 @@ let rec liste_lit_in_conj conj liste_lit = match conj with
   |t::q -> liste_lit_in_conj q (liste_lit_in_clause t liste_lit)
 ;;
 
+let rec find_max l m = match l with
+  |[] -> m
+  |t::q -> find_max q (max m t)
+;;
+
 let displayCnf cnf = 
-sprintf "p cnf %d %d \n%s" (List.length (liste_lit_in_conj cnf [])) (List.length cnf) (display_conj cnf)
+sprintf "p cnf %d %d \n%s" (find_max (liste_lit_in_conj cnf []) 0) (List.length cnf) (display_conj cnf)
 ;;
 
 
@@ -212,5 +217,5 @@ let testCNF cnf =
   resSAT
 ;;	   
 let test () =
-  let exn  =  And(And(Lit(Neg 1),Lit(Pos 4)),Xor(Lit (Pos 2),Lit (Pos 3))) in 
+  let exn  =  And(And(Lit(Neg 1),Lit(Pos 4)),Xor(Lit (Pos 2),Lit (Pos 2))) in 
   print_string ( testCNF (formulaeToCnf [exn]) ) ;;
