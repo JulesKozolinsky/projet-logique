@@ -37,7 +37,7 @@ let rec displayFormula = function
   | Xor (f1,f2) -> sprintf "(%s) + (%s)" (displayFormula f1) (displayFormula f2)
   | Imply (f1, f2) -> sprintf "{%s} ==> {%s}" (displayFormula f1) (displayFormula f2)
   | Equiv (f1,f2) -> sprintf "{%s} <==> {%s}" (displayFormula f1) (displayFormula f2)
-		
+		;;
 (* Prends une formule f et renvoie une formule composé de littéraux, de Ou et de Et *)	     
 let rec simple  f = match f with 
   | Const b -> f
@@ -103,17 +103,16 @@ let rec ftc f = match f with
   | _ -> failwith "normalement on ne rentre pas dans ce cas là"
 ;;
 
-(*
+
 let fusionInside l1 l2 = match l1,l2 with
   |[l1],[l2] -> [l1@l2]
   |_,_ -> failwith "on est foutus" ;;
-*) 
+
 
 let rec formulaToCnf f = match f with
   |And(p,q) -> (formulaToCnf p)@(formulaToCnf q)
-  |Or(p,q)  -> (formulaToCnf p)@(formulaToCnf q)
-  |Lit(n)   -> [[Lit(n)]]
-  |Const(_) -> [[f]] 
+  |Or(p,q)  -> fusionInside (formulaToCnf p) (formulaToCnf q)
+  |Lit(n)   -> [[n]]
   |_        -> failwith "formulaToCnf" ;;
 
 let test = And(And(Lit(Pos 0),Lit(Pos 1)),Or(Lit (Pos 2),Lit (Pos 3)));;
@@ -122,13 +121,14 @@ simple test;;
 formulaToCnf test;;
 
 
+
 let rec concat_et_applique f liste = match liste with 
 	| [] -> [] 
 	| a::suite -> (f a)@(concat_et_applique f suite)
 ;;
 
 
-let formulaeToCnf fl = concat_et_applique (  fun x -> FormulaToCnf(ftc(simple x)) ) fl
+let formulaeToCnf fl = concat_et_applique (  fun x -> formulaToCnf(ftc(simple x)) ) fl
 ;;
 
 let displayCnf cnf = ""		(* [TODO] *)
