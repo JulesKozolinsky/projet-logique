@@ -130,6 +130,7 @@ let rec concat_et_applique f liste = match liste with
 
 let formulaeToCnf fl = concat_et_applique (  fun x -> formulaToCnf(ftc(simple x)) ) fl
 ;;
+formulaeToCnf [test;test];;
 
 let displayCnf cnf = ""		(* [TODO] *)
 
