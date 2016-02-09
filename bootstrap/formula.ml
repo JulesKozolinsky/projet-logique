@@ -37,7 +37,8 @@ let rec displayFormula = function
   | Xor (f1,f2) -> sprintf "(%s) + (%s)" (displayFormula f1) (displayFormula f2)
   | Imply (f1, f2) -> sprintf "{%s} ==> {%s}" (displayFormula f1) (displayFormula f2)
   | Equiv (f1,f2) -> sprintf "{%s} <==> {%s}" (displayFormula f1) (displayFormula f2)
-		
+		;;
+
 (* Prends une formule f et renvoie une formule composé de littéraux, de Ou et de Et *)	     
 let rec simple  f = match f with 
   | Const b -> f
@@ -70,6 +71,10 @@ let rec simple  f = match f with
   | Equiv (f1,f2) -> simple (Or ((And (f1, f2)),(And ((Not f1),(Not f2))) ))  
 ;;
 
+
+
+(**  SUBSTITUTION  **)
+
 (* Si l appartient à tau, on stocke son évluation dans s et on renvoie vrai,
   sinon on renvoie faux *)
 let rec appartient l tau s = match tau with 
@@ -77,7 +82,6 @@ let rec appartient l tau s = match tau with
   | (x,b)::_ when x = l -> ( s := b ; true ) 
   | _::suite -> appartient l suite s 
 ;;
-
 
 let rec subst_aux f tau = match f with
   | Const _ -> f
@@ -92,6 +96,11 @@ let rec subst_aux f tau = match f with
 
 let subst f tau = simple (subst_aux (simple f) tau);;
 
+
+
+(**  FORMULE -> CNF  **)
+
+(* Prend une formule composée de littéraux de Et et de Ou et renvoie une formule sous forme normale conjonctive *)
 let rec ftc f = match f with 
   | Const _ -> f
   | Lit l -> f 
@@ -103,16 +112,19 @@ let rec ftc f = match f with
   | _ -> failwith "normalement on ne rentre pas dans ce cas là"
 ;;
 
+
 let fusionInside l1 l2 = match l1,l2 with
   |[l1],[l2] -> [l1@l2]
   |_,_ -> failwith "on est foutus" ;;
 
+(* Prend une formule sous forme normale conjonctive et renvoie une CNF *)
 let rec formulaToCnf f = match f with
   |And(p,q) -> (formulaToCnf p)@(formulaToCnf q)
   |Or(p,q)  -> fusionInside (formulaToCnf p) (formulaToCnf q)
-  |Lit(n)   -> [[Lit(n)]]
-  |Const(_) -> [[f]] 
+  |Lit(n)   -> [[n]]
   |_        -> failwith "formulaToCnf" ;;
+
+
 
 
 
@@ -121,10 +133,60 @@ let rec concat_et_applique f liste = match liste with
 	| a::suite -> (f a)@(concat_et_applique f suite)
 ;;
 
+(* prend une liste de formules sous forme nc et renvoie la CNF correspondant à la conjonction de ces formules *)
+let formulaeToCnf fl = concat_et_applique (  fun x -> formulaToCnf(ftc(simple x)) ) fl
+;;
 
-let formulaeToCnf fl = [[]]	(* [TODO] *)
-	      
-let displayCnf cnf = ""		(* [TODO] *)
+
+(**  AFFICHAGE  **)
+
+let abs n = if n>=0 then n else -n ;;
+
+let display_lit lit = match lit with 
+  |Pos(n) -> sprintf "%d" n
+  |Neg(n) -> sprintf "-%d" n 
+;;
+
+let rec display_clause clause = match clause with
+  |[] -> sprintf "0"
+  |t::q -> sprintf "%s %s" (display_lit t) (display_clause q)
+;;
+
+let rec display_conj conj = match conj with
+  |[] -> sprintf "\n"
+  |t::q -> sprintf "%s \n%s" (display_clause t) (display_conj q)
+;;
+
+let rec liste_lit_in_clause clause liste_lit = match clause with
+  |[] -> liste_lit
+  |Pos(n)::q -> if List.mem (abs n) liste_lit then liste_lit_in_clause q liste_lit else liste_lit_in_clause q ((abs n)::liste_lit)
+  |Neg(n)::q -> if List.mem (abs n) liste_lit then liste_lit_in_clause q liste_lit else liste_lit_in_clause q ((abs n)::liste_lit)
+;;
+
+let rec liste_lit_in_conj conj liste_lit = match conj with
+  |[] -> liste_lit
+  |t::q -> liste_lit_in_conj q (liste_lit_in_clause t liste_lit)
+;;
+
+let rec find_max l m = match l with
+  |[] -> m
+  |t::q -> find_max q (max m t)
+;;
+
+let displayCnf cnf = 
+sprintf "p cnf %d %d \n%s" (find_max (liste_lit_in_conj cnf []) 0) (List.length cnf) (display_conj cnf)
+;;
+
+
+
+let test =  And(And(Lit(Neg 5),Lit(Pos 4)),Xor(Lit (Pos 2),Lit (Pos 3)));;
+
+(* formulaeToCnf [test;test];; *)
+print_string (displayFormula test);;
+print_newline () ;;
+print_string (displayCnf(formulaeToCnf [test]));;
+print_newline () ;;
+
 
 (*** TEST ***)
 let dummyCNF =
@@ -135,30 +197,25 @@ let dummyCNF =
 let sat_solver = ref "./minisat"
 
 (** Return the result of minisat called on [cnf] **)
-let testCNF cnf = 
-  let cnf_display = displayCnf cnf in
-  let fn_cnf = "temp.out" in
+let testCNF cnf =
+  let cnf_display = displayCnf cnf
+  and fn_cnf = "temp_cnf.out"
+  and fn_res = "temp_res.out" in
   let oc = open_out fn_cnf in
-  Printf.fprintf oc  "%s\n" cnf_display;
+  Printf.fprintf oc "%s\n" cnf_display;
   close_out oc;
   let resc = (Unix.open_process_in
 		(!sat_solver ^ " \"" ^ (String.escaped fn_cnf)
-		 ^ "\"") : in_channel) in
-  let resSAT = let acc = ref [] in
-	       try while true do
-		     acc := (input_line resc) :: !acc
-		   done; ""
-	       with End_of_file ->
-		 close_in resc;
-		 if List.length !acc = 0
-		 then begin
-		     log ~level:High "It seems that there is no executable called 'minisat' at top level.";
-		     exit 0;
-		   end
-		 else String.concat "\n" (List.rev !acc) in
-  close_in resc;
-  List.hd (List.rev (Str.split (Str.regexp " +") resSAT))
-	   
+		 ^ "\" \"" ^ (String.escaped fn_res)^"\"") : in_channel) in
+  Unix.close_process_in resc;
+  let resSAT = let ic = open_in fn_res in
+	       try (let line1 = input_line ic in
+		    let line2 = try input_line ic with _ -> "" in
+		    close_in ic;
+		    line1^line2)
+	       with e -> close_in_noerr ic; raise e in
+  resSAT
+;;	   
 let test () =
-  ()			     (* [TODO] *)
-  (* Yout test using your functions here *)
+  let exn  =  And(And(Lit(Neg 1),Lit(Pos 4)),Xor(Lit (Pos 2),Lit (Pos 2))) in 
+  print_string ( testCNF (formulaeToCnf [exn]) ) ;;
