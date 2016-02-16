@@ -179,13 +179,13 @@ sprintf "p cnf %d %d \n%s" (find_max (liste_lit_in_conj cnf []) 0) (List.length 
 
 
 
-let test =  And(And(Lit(Neg 5),Lit(Pos 4)),Xor(Lit (Pos 2),Lit (Pos 3)));;
+(*let test =  And(And(Lit(Neg 5),Lit(Pos 4)),Xor(Lit (Pos 2),Lit (Pos 3)));;
 
 (* formulaeToCnf [test;test];; *)
 print_string (displayFormula test);;
 print_newline () ;;
 print_string (displayCnf(formulaeToCnf [test]));;
-print_newline () ;;
+print_newline () ;;*)
 
 
 (*** TEST ***)
@@ -215,7 +215,6 @@ let testCNF cnf =
 		    line1^line2)
 	       with e -> close_in_noerr ic; raise e in
   resSAT
-;;	   
-let test () =
-  let exn  =  And(And(Lit(Neg 1),Lit(Pos 4)),Xor(Lit (Pos 2),Lit (Pos 2))) in 
-  print_string ( testCNF (formulaeToCnf [exn]) ) ;;
+;;
+
+let test () = () ;;	   
