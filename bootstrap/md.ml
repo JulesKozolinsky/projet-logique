@@ -19,6 +19,10 @@ By default:
 open Param
 open Data
 open Printf
-       
+ 
+let xor p q = (p && not(q)) || (not(p) && q) ;;
+      
 (*** Main function ***)	  
-let compute input = Array.make 128 false (* [TODO] *)
+let compute input = Array.make 128 false
+;;
+ (* [TODO] *)

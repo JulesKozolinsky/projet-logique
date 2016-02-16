@@ -12,4 +12,9 @@ open Formula
 open Data
 
 (*** Main function ***)
-let genCNF digest =  [[]]				(* TODO *)
+let genCNF digest = [[]]
+;;
+
+				(* TODO *)
+
+
