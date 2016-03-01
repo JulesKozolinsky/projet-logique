@@ -69,7 +69,7 @@ let addBitABit a b =
   res ;;
 
 let slice32 tab = 
-  let res = Array.make 32 (Array.make 32 false) in
+  let res = Array.make_matrix 16 32 false in
   for k = 0 to 15 do 
     res.(k) <- Array.sub tab (32*k) (32*(k+1)) ;
   done ;
