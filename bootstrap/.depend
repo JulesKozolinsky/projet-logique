@@ -15,5 +15,5 @@ md.cmo : param.cmi data.cmi md.cmi
 md.cmx : param.cmx data.cmx md.cmi
 param.cmo : param.cmi
 param.cmx : param.cmi
-weakhash.cmo :
-weakhash.cmx :
+weakhash.cmo : formula.cmi
+weakhash.cmx : formula.cmx
